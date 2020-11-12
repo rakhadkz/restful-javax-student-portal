@@ -75,11 +75,11 @@ public class NewsService extends BasicService implements INews {
         }else{
             query = "select * from news where major_id = " + major_id;
         }
-        ArrayList<Event> list = new ArrayList<>();
+        ArrayList<News> list = new ArrayList<>();
         statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery(query);
         while (resultSet.next())
-            list.add(new Event(
+            list.add(new News(
                     resultSet.getInt("id"),
                     resultSet.getString("name"),
                     resultSet.getString("description"),
