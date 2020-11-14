@@ -28,7 +28,6 @@ public class ClubService extends BasicService implements IClub {
         String query = "select * from club where id = " + id;
         statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery(query);
-        closeAll();
         if (!resultSet.isBeforeFirst()){
             throw new Exception(ResponseMessage.NOT_FOUND);
         }
@@ -87,7 +86,7 @@ public class ClubService extends BasicService implements IClub {
 
     @Override
     public Response enter(int club_id, int student_id) throws Exception {
-        String query = "insert into students_club (club_id, student_id) values (?, ?)";
+        String query = "insert into students_clubs (club_id, student_id) values (?, ?)";
         preparedStatement = connection.prepareStatement(query);
         preparedStatement.setInt(1, club_id);
         preparedStatement.setInt(2, student_id);

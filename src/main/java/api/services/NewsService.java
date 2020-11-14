@@ -4,6 +4,7 @@ import api.Response.CustomResponses;
 import api.Response.ResponseMessage;
 import api.interfaces.INews;
 import api.models.Event;
+import api.models.Major;
 import api.models.News;
 
 import javax.ws.rs.core.Response;
@@ -19,7 +20,10 @@ public class NewsService extends BasicService implements INews {
         preparedStatement.setString(1, news.getName());
         preparedStatement.setString(2, news.getDescription());
         preparedStatement.setString(3, news.getImage());
-        preparedStatement.setInt(4, news.getId());
+        if (news.getMajor() != null)
+            preparedStatement.setInt(4, news.getMajor().getId());
+        else
+            preparedStatement.setObject(4, null);
         preparedStatement.executeUpdate();
         closeAll();
         return CustomResponses.CREATED;
@@ -27,10 +31,10 @@ public class NewsService extends BasicService implements INews {
 
     @Override
     public Response read(int id) throws Exception {
-        String query = "select * from news where id = " + id;
+        String query = "select *, m.name as major_name from news n inner join major m " +
+                "on n.major_id = m.id where n.id = " + id;
         statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery(query);
-        closeAll();
         if (!resultSet.isBeforeFirst()){
             throw new Exception(ResponseMessage.NOT_FOUND);
         }
@@ -40,18 +44,23 @@ public class NewsService extends BasicService implements INews {
                 resultSet.getString("name"),
                 resultSet.getString("description"),
                 resultSet.getString("image"),
+                new Major(resultSet.getInt("major_id"), resultSet.getString("major_name")),
                 resultSet.getDate("created_at")
         ));
     }
 
     @Override
     public Response update(News news) throws Exception {
-        String query = "update news set name = ?, description = ?, image = ? where id = ?";
+        String query = "update news set name = ?, description = ?, image = ?, major_id = ? where id = ?";
         preparedStatement = connection.prepareStatement(query);
         preparedStatement.setString(1, news.getName());
         preparedStatement.setString(2, news.getDescription());
         preparedStatement.setString(3, news.getImage());
-        preparedStatement.setInt(4, news.getId());
+        if (news.getMajor() != null)
+            preparedStatement.setInt(4, news.getMajor().getId());
+        else
+            preparedStatement.setObject(4, null);
+        preparedStatement.setInt(5, news.getId());
         preparedStatement.executeUpdate();
         closeAll();
         return CustomResponses.UPDATED;
@@ -71,9 +80,10 @@ public class NewsService extends BasicService implements INews {
     public Response getNews(int major_id) throws Exception {
         String query;
         if (major_id == 0){
-            query = "select * from news";
+            query = "select *, m.name as major_name from news n inner join major m on n.major_id = m.id";
         }else{
-            query = "select * from news where major_id = " + major_id;
+            query = "select *, m.name as major_name from news n inner join major m " +
+                    "on n.major_id = m.id where n.major_id = " + major_id;
         }
         ArrayList<News> list = new ArrayList<>();
         statement = connection.createStatement();
@@ -84,6 +94,7 @@ public class NewsService extends BasicService implements INews {
                     resultSet.getString("name"),
                     resultSet.getString("description"),
                     resultSet.getString("image"),
+                    new Major(resultSet.getInt("major_id"), resultSet.getString("major_name")),
                     resultSet.getDate("created_at")
             ));
         closeAll();

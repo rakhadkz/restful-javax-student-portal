@@ -22,16 +22,17 @@ public class StudentService extends BasicService implements IStudent {
         preparedStatement.setInt(6, student.getMajor().getId());
         preparedStatement.setInt(7, student.getYear());
         preparedStatement.executeUpdate();
-        closeAll();
         return CustomResponses.CREATED;
     }
 
     @Override
     public Response read(int id) throws Exception {
-        String query = "select * from student where id = " + id;
+        String query = "select *,m.name as major_name, g.name as group_name from student s " +
+                "inner join _group g on s.group_id = g.id " +
+                "inner join major m on s.major_id = m.id " +
+                "where s.id = " + id;
         statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery(query);
-        closeAll();
         if (!resultSet.isBeforeFirst()){
             throw new Exception(ResponseMessage.NOT_FOUND);
         }
@@ -49,17 +50,16 @@ public class StudentService extends BasicService implements IStudent {
 
     @Override
     public Response update(Student student) throws Exception {
-        String query = "update club set firstName = ?, lastName = ?, email = ?, group_id = ?, major_id = ?, year = ? where id = ?";
+        String query = "update student set firstName = ?, lastName = ?, email = ?, group_id = ?, major_id = ?, year = ? where id = ?";
         preparedStatement = connection.prepareStatement(query);
         preparedStatement.setString(1, student.getFirstName());
         preparedStatement.setString(2, student.getLastName());
         preparedStatement.setString(3, student.getEmail());
-        preparedStatement.setString(4, student.getEmail());
+        preparedStatement.setInt(4, student.getGroup().getId());
         preparedStatement.setInt(5, student.getMajor().getId());
-        preparedStatement.setInt(6, student.getMajor().getId());
-        preparedStatement.setInt(7, student.getYear());
+        preparedStatement.setInt(6, student.getYear());
+        preparedStatement.setInt(7, student.getId());
         preparedStatement.executeUpdate();
-        closeAll();
         return CustomResponses.UPDATED;
     }
 

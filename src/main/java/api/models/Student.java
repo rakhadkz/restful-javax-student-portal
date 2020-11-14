@@ -5,6 +5,9 @@ public class Student extends User{
     private Major major;
     private int year;
 
+    public Student() {
+    }
+
     public Student(int id, String email, String firstName, String lastName, Group group, Major major, int year) {
         super(id, email, firstName, lastName);
         this.group = group;
